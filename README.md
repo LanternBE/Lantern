@@ -1,7 +1,7 @@
 # Lantern
 
 <p align="center">
-    <img src="https://github.com/LanternBE/Lantern/blob/main/Assets/wallpaper.jpg" alt="Image" width="1050" height="500" />
+    <img src="https://github.com/LanternBE/Lantern/blob/main/Assets/wallpaper.jpg" alt="Image"/>
 </p>
 
 > [!WARNING]
