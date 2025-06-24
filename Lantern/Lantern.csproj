@@ -9,6 +9,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\BedrockProtocol\BedrockProtocol\BedrockProtocol.csproj" />
       <ProjectReference Include="..\RakSharp\RakSharp\RakSharp.csproj" />
     </ItemGroup>
 

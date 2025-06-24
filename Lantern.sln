@@ -4,6 +4,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lantern", "Lantern\Lantern.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RakSharp", "RakSharp\RakSharp\RakSharp.csproj", "{060C1325-2109-4AAC-B0D9-C6BDF25B98A3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BedrockProtocol", "BedrockProtocol\BedrockProtocol\BedrockProtocol.csproj", "{3E0A4859-E3D5-4482-8581-2D27F46A3E5B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +20,9 @@ Global
 		{060C1325-2109-4AAC-B0D9-C6BDF25B98A3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{060C1325-2109-4AAC-B0D9-C6BDF25B98A3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{060C1325-2109-4AAC-B0D9-C6BDF25B98A3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3E0A4859-E3D5-4482-8581-2D27F46A3E5B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3E0A4859-E3D5-4482-8581-2D27F46A3E5B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3E0A4859-E3D5-4482-8581-2D27F46A3E5B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3E0A4859-E3D5-4482-8581-2D27F46A3E5B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

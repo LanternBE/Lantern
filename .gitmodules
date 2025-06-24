@@ -1,3 +1,6 @@
 [submodule "RakSharp"]
 	path = RakSharp
 	url = https://github.com/LanternBE/RakSharp.git
+[submodule "BedrockProtocol"]
+	path = BedrockProtocol
+	url = https://github.com/LanternBE/BedrockProtocol.git
