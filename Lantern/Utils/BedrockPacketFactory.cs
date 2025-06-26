@@ -20,8 +20,6 @@ public static class BedrockPacketFactory {
             try {
                 var reader = new BinaryReader(buffer);
                 var packet = (BedrockPacket)Activator.CreateInstance(type)!;
-                
-                packet.ReadHeader(reader);
                 reader.Position = 0;
                 
                 packet.Read(reader);
