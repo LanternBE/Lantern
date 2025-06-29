@@ -1,4 +1,5 @@
 using BedrockProtocol.Types;
+using RakSharp;
 using BinaryReader = RakSharp.Binary.BinaryReader;
 
 namespace Lantern.Utils;
@@ -24,8 +25,8 @@ public static class BedrockPacketFactory {
                 
                 packet.Read(reader);
                 return packet;
-            } catch {
-                // Ignore
+            } catch (RakSharpException.InvalidPacketIdException e) {
+                //
             }
         }
         

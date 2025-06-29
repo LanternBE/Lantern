@@ -64,7 +64,7 @@ public class BedrockServer {
     }
 
     private async void HandleGamePacket(ClientSession clientSession, EncapsulatedPacket encapsulatedPacket) {
-
+        
         var packet = BedrockPacketFactory.CreateFromBuffer(encapsulatedPacket.Buffer);
         if (packet is not GamePacket gamePacket) {
             Logger.LogWarn($"Unknown or unsupported BedrockPacket: ({encapsulatedPacket.Buffer[0]}) from ({clientSession.RemoteEndPoint})");
