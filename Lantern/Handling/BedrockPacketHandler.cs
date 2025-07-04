@@ -62,7 +62,7 @@ public abstract class BedrockPacketHandler<T> {
             throw new InvalidOperationException($"Session not found for {ClientEndPoint}");
         
         var encapsulatedPacket = EncapsulatedPacket.Create(gamePacketBuffer, PacketReliability.ReliableOrdered, session.GetNextReliableIndex(), session.GetNextOrderedIndex());
-        Console.WriteLine($"Buffer encapsulatedpacket: {BitConverter.ToString(encapsulatedPacket.Buffer)}");
+        Console.WriteLine($"Buffer encapsulatedpacket: {BitConverter.ToString(encapsulatedPacket.ToBytes())}");
         
         var sequenceNumber = session.GetNextSequenceNumber();
         var datagram = Datagram.Create(0, [encapsulatedPacket], sequenceNumber);
