@@ -1,6 +1,7 @@
 using BedrockProtocol;
 using BedrockProtocol.Types;
 using RakSharp.Utils;
+using PlayStatus = BedrockProtocol.PlayStatus;
 
 namespace Lantern.Handling.Handlers;
 
@@ -15,15 +16,21 @@ public class RequestNetworkSettingsHandler : BedrockPacketHandler<RequestNetwork
         }
         
         Logger.LogDebug($"Received RequestNetworkSettings inside the GamePacket from ({ClientEndPoint}) with Protocol Version: {Packet.ProtocolVersion}");
-        if (Packet.ProtocolVersion < Info.SupportedProtocols.Last()) {
+        if (Packet.ProtocolVersion < Info.SupportedProtocols.First()) {
+            
             Logger.LogError($"Protocol version {Packet.ProtocolVersion} is outdated");
-            // TODO: Send PlayStatus packet with BedrockProtocol.Types.PlayStatus.LoginFailedClientOld
+            await SendBedrockPacketAsync(PlayStatus.Create(compressionAlgorithm: Compression.Algorithm.None, BedrockProtocol.Types.PlayStatus.LoginFailedClientOld));
+            
+            clientSession.Disconnect();
             return false;
         }
 
         if (Packet.ProtocolVersion > Info.SupportedProtocols.Last()) {
+            
             Logger.LogError($"Server Protocol version {Packet.ProtocolVersion} is outdated");
-            // TODO: Send PlayStatus packet with BedrockProtocol.Types.PlayStatus.LoginFailedServerOld
+            await SendBedrockPacketAsync(PlayStatus.Create(compressionAlgorithm: Compression.Algorithm.None, BedrockProtocol.Types.PlayStatus.LoginFailedServerOld));
+           
+            clientSession.Disconnect();
             return false;
         }
 
@@ -32,6 +39,7 @@ public class RequestNetworkSettingsHandler : BedrockPacketHandler<RequestNetwork
         
         await SendBedrockPacketAsync(networkSettings);
         Console.WriteLine(BitConverter.ToString(networkSettings.buffer));
+        
         return true;
     }
 }
