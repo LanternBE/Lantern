@@ -38,8 +38,6 @@ public class RequestNetworkSettingsHandler : BedrockPacketHandler<RequestNetwork
         var networkSettings = NetworkSettings.Create(Compression.Algorithm.Zlib);
         
         await SendBedrockPacketAsync(networkSettings);
-        Console.WriteLine(BitConverter.ToString(networkSettings.buffer));
-        
         return true;
     }
 }
