@@ -32,7 +32,9 @@ public abstract class BedrockPacketHandler<T> : IBedrockPacketHandler where T : 
         _buffer = buffer;
         
         if (packet is not T typedPacket) {
-            throw new InvalidOperationException($"Invalid packet type. Expected {typeof(T).Name}, received {packet.GetType().Name}");
+            throw new InvalidOperationException(
+                $"Invalid packet type. Expected {typeof(T).FullName ?? typeof(T).Name}, received {packet.GetType().FullName ?? packet.GetType().Name}"
+            );
         }
         
         _packet = typedPacket;

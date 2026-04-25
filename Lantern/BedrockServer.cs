@@ -90,6 +90,9 @@ public class BedrockServer {
             return;
         
         handler.Initialize(Server, Server.Socket, clientSession.RemoteEndPoint, gamePacket.Payload, bedrockPacket);
-        await handler.HandleAsync();
+        var handled = await handler.HandleAsync();
+        if (!handled) {
+            Logger.LogDebug($"Packet {packetType.Name} from {clientSession.RemoteEndPoint} was not fully handled.");
+        }
     }
 }
