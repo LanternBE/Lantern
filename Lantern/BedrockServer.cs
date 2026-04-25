@@ -1,5 +1,6 @@
-﻿using System.Net;
+using System.Net;
 using BedrockProtocol;
+using BedrockProtocol.Types;
 using Lantern.Handling;
 using Lantern.Utils;
 using RakSharp;
@@ -72,7 +73,7 @@ public class BedrockServer {
             return;
         }
 
-        BedrockPacket? bedrockPacket;
+        BedrockPacket? maybeBedrockPacket;
         byte[] payloadBuffer;
 
         if (outerPacket is GamePacket gamePacket) {
@@ -82,16 +83,17 @@ public class BedrockServer {
             }
 
             payloadBuffer = gamePacket.Payload;
-            bedrockPacket = BedrockPacketFactory.CreateFromBuffer(payloadBuffer);
+            maybeBedrockPacket = BedrockPacketFactory.CreateFromBuffer(payloadBuffer);
         } else {
             payloadBuffer = encapsulatedPacket.Buffer;
-            bedrockPacket = outerPacket;
+            maybeBedrockPacket = outerPacket;
         }
 
-        if (bedrockPacket is null) {
+        if (maybeBedrockPacket is null) {
             Logger.LogWarn($"Unknown or unsupported BedrockPacket: ({payloadBuffer[0]}) from ({clientSession.RemoteEndPoint})");
             return;
         }
+        var bedrockPacket = maybeBedrockPacket;
 
         var packetType = bedrockPacket.GetType();
         var handler = BedrockHandler.CreateHandler(packetType);
