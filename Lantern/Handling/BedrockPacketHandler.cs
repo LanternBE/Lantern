@@ -12,24 +12,30 @@ namespace Lantern.Handling;
 
 public abstract class BedrockPacketHandler<T> : IBedrockPacketHandler where T : BedrockPacket {
     
-    protected Server Server { get; private set; } = null!;
-    protected Socket Socket { get; private set; } = null!;
-    protected IPEndPoint ClientEndPoint { get; private set; } = null!;
-    protected byte[] Buffer { get; private set; } = null!;
-    protected T Packet { get; private set; } = null!;
+    private Server? _server;
+    private Socket? _socket;
+    private IPEndPoint? _clientEndPoint;
+    private byte[]? _buffer;
+    private T? _packet;
+    
+    protected Server Server => _server ?? throw new InvalidOperationException("Handler not initialized.");
+    protected Socket Socket => _socket ?? throw new InvalidOperationException("Handler not initialized.");
+    protected IPEndPoint ClientEndPoint => _clientEndPoint ?? throw new InvalidOperationException("Handler not initialized.");
+    protected byte[] Buffer => _buffer ?? throw new InvalidOperationException("Handler not initialized.");
+    protected T Packet => _packet ?? throw new InvalidOperationException("Handler not initialized.");
 
     public void Initialize(Server server, Socket socket, IPEndPoint clientEndPoint, byte[] buffer, BedrockPacket packet) {
         
-        Server = server;
-        Socket = socket;
-        ClientEndPoint = clientEndPoint;
-        Buffer = buffer;
+        _server = server;
+        _socket = socket;
+        _clientEndPoint = clientEndPoint;
+        _buffer = buffer;
         
         if (packet is not T typedPacket) {
             throw new InvalidOperationException($"Invalid packet type. Expected {typeof(T).Name}, received {packet.GetType().Name}");
         }
         
-        Packet = typedPacket;
+        _packet = typedPacket;
     }
 
     public abstract Task<bool> HandleAsync();
