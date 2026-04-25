@@ -2,6 +2,7 @@ using BedrockProtocol;
 using BedrockProtocol.Types;
 using Lantern.Handling.Handlers;
 using Lantern.Handling.Interfaces;
+using Lantern.Protocol;
 
 namespace Lantern.Handling;
 
@@ -12,6 +13,7 @@ public class BedrockHandler {
     public void InitializeDefaultHandlers() {
         
         RegisterHandler<RequestNetworkSettings, RequestNetworkSettingsHandler>();
+        RegisterHandler<Login, LoginHandler>();
     }
 
     public void RegisterHandler<TPacket, THandler>()
