@@ -6,9 +6,9 @@ namespace Lantern.Utils;
 
 public static class BedrockPacketFactory {
     
-    private static readonly List<Type> PacketTypes = [
-        typeof(BedrockProtocol.RequestNetworkSettings),
-        typeof(BedrockProtocol.GamePacket)
+    private static readonly List<Func<BedrockPacket>> PacketFactories = [
+        () => new BedrockProtocol.RequestNetworkSettings(),
+        () => new BedrockProtocol.GamePacket()
     ];
 
     public static BedrockPacket? CreateFromBuffer(byte[] buffer) {
@@ -16,16 +16,16 @@ public static class BedrockPacketFactory {
         if (buffer is null || buffer.Length is 0)
             return null;
 
-        foreach (var type in PacketTypes) {
+        foreach (var packetFactory in PacketFactories) {
             
             try {
                 var reader = new BinaryReader(buffer);
-                var packet = (BedrockPacket)Activator.CreateInstance(type)!;
+                var packet = packetFactory();
                 reader.Position = 0;
                 
                 packet.Read(reader);
                 return packet;
-            } catch (RakSharpException.InvalidPacketIdException e) {
+            } catch (RakSharpException.InvalidPacketIdException) {
                 //
             }
         }

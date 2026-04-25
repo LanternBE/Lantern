@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Sockets;
 using BedrockProtocol;
 using BedrockProtocol.Types;
+using Lantern.Handling.Interfaces;
 using RakSharp;
 using RakSharp.Protocol;
 using RakSharp.Protocol.Online;
@@ -9,21 +10,35 @@ using RakSharp.Utils;
 
 namespace Lantern.Handling;
 
-public abstract class BedrockPacketHandler<T> {
+public abstract class BedrockPacketHandler<T> : IBedrockPacketHandler where T : BedrockPacket {
     
-    protected Server Server { get; set; }
-    protected Socket Socket { get; set; }
-    protected IPEndPoint ClientEndPoint { get; set; }
-    protected byte[] Buffer { get; set; }
-    protected T Packet { get; set; }
+    private Server? _server;
+    private Socket? _socket;
+    private IPEndPoint? _clientEndPoint;
+    private byte[]? _buffer;
+    private T? _packet;
+    
+    protected Server Server => _server ?? throw new InvalidOperationException("Handler not initialized.");
+    protected Socket Socket => _socket ?? throw new InvalidOperationException("Handler not initialized.");
+    protected IPEndPoint ClientEndPoint => _clientEndPoint ?? throw new InvalidOperationException("Handler not initialized.");
+    protected byte[] Buffer => _buffer ?? throw new InvalidOperationException("Handler not initialized.");
+    protected T Packet => _packet ?? throw new InvalidOperationException("Handler not initialized.");
 
-    public void Initialize(Server server, Socket socket, IPEndPoint clientEndPoint, byte[] buffer, T packet) {
+    public void Initialize(Server server, Socket socket, IPEndPoint clientEndPoint, byte[] buffer, BedrockPacket packet) {
         
-        Server = server;
-        Socket = socket;
-        ClientEndPoint = clientEndPoint;
-        Buffer = buffer;
-        Packet = packet;
+        _server = server;
+        _socket = socket;
+        _clientEndPoint = clientEndPoint;
+        _buffer = buffer;
+        
+        if (packet is not T typedPacket) {
+            var packetType = packet.GetType();
+            throw new InvalidOperationException(
+                $"Invalid packet type. Expected {typeof(T).FullName ?? typeof(T).Name}, received {packetType.FullName ?? packetType.Name}"
+            );
+        }
+        
+        _packet = typedPacket;
     }
 
     public abstract Task<bool> HandleAsync();

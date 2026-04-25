@@ -31,7 +31,9 @@ public class BedrockServer {
 
     public BedrockServer(IPEndPoint ipEndPoint) {
         
+        ConfigManager = new ConfigManager();
         IpEndPoint = ipEndPoint;
+        Debug = ConfigManager.Settings.DebugMode;
         Server = new Server(ipEndPoint);
         
         Server.OnGamePacketReceived += HandleGamePacket;
@@ -83,26 +85,16 @@ public class BedrockServer {
         }
         
         var packetType = bedrockPacket.GetType();
-        var handlerType = BedrockHandler.GetHandlerType(packetType);
-
-        if (handlerType is null)
+        var handler = BedrockHandler.CreateHandler(packetType);
+        if (handler is null)
             return;
-
-        var handler = BedrockHandler.CreateHandler(handlerType);
-        var initializeMethod = handlerType.GetMethod("Initialize");
-
-        if (initializeMethod == null)
-            return;
-
-        initializeMethod.Invoke(handler, [Server, Server.Socket, clientSession.RemoteEndPoint, gamePacket.Payload, bedrockPacket]);
-        var handleMethod = handlerType.GetMethod("HandleAsync");
-
-        if (handleMethod == null)
-            return;
-
-        var result = handleMethod.Invoke(handler, null);
-        if (result is Task<bool> task) {
-            await task;
+        
+        handler.Initialize(Server, Server.Socket, clientSession.RemoteEndPoint, gamePacket.Payload, bedrockPacket);
+        var handled = await handler.HandleAsync();
+        if (!handled) {
+            var packetName = packetType.Name;
+            var remoteEndPoint = clientSession.RemoteEndPoint?.ToString() ?? "unknown-endpoint";
+            Logger.LogDebug($"Packet {packetName} from {remoteEndPoint} was not fully handled.");
         }
     }
 }
