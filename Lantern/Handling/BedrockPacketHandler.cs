@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Sockets;
 using BedrockProtocol;
 using BedrockProtocol.Types;
+using Lantern.Handling.Interfaces;
 using RakSharp;
 using RakSharp.Protocol;
 using RakSharp.Protocol.Online;
@@ -9,21 +10,26 @@ using RakSharp.Utils;
 
 namespace Lantern.Handling;
 
-public abstract class BedrockPacketHandler<T> {
+public abstract class BedrockPacketHandler<T> : IBedrockPacketHandler where T : BedrockPacket {
     
-    protected Server Server { get; set; }
-    protected Socket Socket { get; set; }
-    protected IPEndPoint ClientEndPoint { get; set; }
-    protected byte[] Buffer { get; set; }
-    protected T Packet { get; set; }
+    protected Server Server { get; private set; } = null!;
+    protected Socket Socket { get; private set; } = null!;
+    protected IPEndPoint ClientEndPoint { get; private set; } = null!;
+    protected byte[] Buffer { get; private set; } = null!;
+    protected T Packet { get; private set; } = null!;
 
-    public void Initialize(Server server, Socket socket, IPEndPoint clientEndPoint, byte[] buffer, T packet) {
+    public void Initialize(Server server, Socket socket, IPEndPoint clientEndPoint, byte[] buffer, BedrockPacket packet) {
         
         Server = server;
         Socket = socket;
         ClientEndPoint = clientEndPoint;
         Buffer = buffer;
-        Packet = packet;
+        
+        if (packet is not T typedPacket) {
+            throw new InvalidOperationException($"Invalid packet type. Expected {typeof(T).Name}, received {packet.GetType().Name}");
+        }
+        
+        Packet = typedPacket;
     }
 
     public abstract Task<bool> HandleAsync();
