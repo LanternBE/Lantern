@@ -92,7 +92,9 @@ public class BedrockServer {
         handler.Initialize(Server, Server.Socket, clientSession.RemoteEndPoint, gamePacket.Payload, bedrockPacket);
         var handled = await handler.HandleAsync();
         if (!handled) {
-            Logger.LogDebug($"Packet {packetType.Name} from {clientSession.RemoteEndPoint} was not fully handled.");
+            var packetName = packetType.Name;
+            var remoteEndPoint = clientSession.RemoteEndPoint?.ToString() ?? "unknown-endpoint";
+            Logger.LogDebug($"Packet {packetName} from {remoteEndPoint} was not fully handled.");
         }
     }
 }
