@@ -25,6 +25,7 @@ public class RequestNetworkSettingsHandler : BedrockPacketHandler<RequestNetwork
         }
 
         clientSession.Compression = Compression.Algorithm.Zlib;
+        // TODO: Lower this threshold once full compressed packet decode/encode is implemented for post-login gameplay packets.
         // Keep threshold high for now to avoid mandatory compression while basic login flow is incomplete.
         var networkSettings = NetworkSettings.Create(
             compressionAlgorithm: Compression.Algorithm.Zlib,

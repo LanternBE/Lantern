@@ -14,7 +14,7 @@ public class ResourcePackStack : BedrockPacket {
 
     public bool MustAccept { get; private set; }
     public uint ResourcePackStackCount { get; private set; }
-    public string BaseGameVersion { get; private set; } = "1.21.90";
+    public string BaseGameVersion { get; private set; } = ProtocolSupport.BaseGameVersion;
     public uint ExperimentsCount { get; private set; }
     public bool ExperimentsPreviouslyToggled { get; private set; }
     public bool UseVanillaEditorPacks { get; private set; }
@@ -51,7 +51,7 @@ public class ResourcePackStack : BedrockPacket {
     public static (ResourcePackStack packet, byte[] buffer) Create(
         Compression.Algorithm compressionAlgorithm,
         bool mustAccept = false,
-        string baseGameVersion = "1.21.90",
+        string baseGameVersion = ProtocolSupport.BaseGameVersion,
         bool useVanillaEditorPacks = false
     ) {
         return BedrockPacket.Create<ResourcePackStack>(packet => {

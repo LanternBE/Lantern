@@ -5,6 +5,8 @@ namespace Lantern.Utils;
 
 public static class ProtocolSupport {
 
+    public const string BaseGameVersion = "1.21.93";
+
     public static bool TryValidateClientProtocol(
         int protocolVersion,
         out PlayStatus rejectionStatus,
