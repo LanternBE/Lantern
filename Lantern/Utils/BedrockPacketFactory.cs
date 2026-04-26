@@ -12,6 +12,8 @@ public static class BedrockPacketFactory {
         () => new BedrockProtocol.RequestNetworkSettings(),
         () => new Login(),
         () => new ResourcePackClientResponse(),
+        () => new RequestChunkRadius(),
+        () => new SetLocalPlayerAsInitialized(),
         () => new BedrockProtocol.GamePacket(),
         () => new BedrockProtocol.RawBedrockPacket()
     ];

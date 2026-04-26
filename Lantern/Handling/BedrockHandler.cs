@@ -15,6 +15,8 @@ public class BedrockHandler {
         RegisterHandler<RequestNetworkSettings, RequestNetworkSettingsHandler>();
         RegisterHandler<Login, LoginHandler>();
         RegisterHandler<ResourcePackClientResponse, ResourcePackClientResponseHandler>();
+        RegisterHandler<RequestChunkRadius, RequestChunkRadiusHandler>();
+        RegisterHandler<SetLocalPlayerAsInitialized, SetLocalPlayerAsInitializedHandler>();
     }
 
     public void RegisterHandler<TPacket, THandler>()

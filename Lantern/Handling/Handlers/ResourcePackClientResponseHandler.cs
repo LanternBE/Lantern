@@ -1,10 +1,13 @@
 using BedrockProtocol.Types;
 using Lantern.Protocol;
 using RakSharp.Utils;
+using PlayStatusPacket = BedrockProtocol.PlayStatus;
 
 namespace Lantern.Handling.Handlers;
 
 public class ResourcePackClientResponseHandler : BedrockPacketHandler<ResourcePackClientResponse> {
+
+    private const ulong LocalPlayerRuntimeId = 1;
 
     public override async Task<bool> HandleAsync() {
         Logger.LogDebug($"Received ResourcePackClientResponse ({Packet.Status}) from ({ClientEndPoint})");
@@ -25,11 +28,33 @@ public class ResourcePackClientResponseHandler : BedrockPacketHandler<ResourcePa
 
             case ResourcePackClientResponse.StatusCompleted:
                 Logger.LogInfo($"Client ({ClientEndPoint}) completed resource pack handshake.");
+                await SendGameplayStartSequenceAsync();
                 return true;
 
             default:
                 Logger.LogDebug($"Unhandled ResourcePackClientResponse status {Packet.Status} from ({ClientEndPoint}).");
                 return false;
         }
+    }
+
+    private async Task SendGameplayStartSequenceAsync() {
+        var worldName = Server.ConfigManager.Settings.ServerName;
+        var viewDistance = Math.Max(1, Server.ConfigManager.Settings.ViewDistance);
+
+        await SendBedrockPacketAsync(StartGame.Create(
+            compressionAlgorithm: Compression.Algorithm.Zlib,
+            entityRuntimeId: LocalPlayerRuntimeId,
+            worldName: worldName,
+            playerGameMode: 0,
+            x: 0,
+            y: 64,
+            z: 0
+        ));
+
+        await SendBedrockPacketAsync(BiomeDefinitionList.Create(Compression.Algorithm.Zlib));
+        await SendBedrockPacketAsync(AvailableEntityIdentifiers.Create(Compression.Algorithm.Zlib));
+        await SendBedrockPacketAsync(CreativeContent.Create(Compression.Algorithm.Zlib));
+        await SendBedrockPacketAsync(ChunkRadiusUpdated.Create(Compression.Algorithm.Zlib, viewDistance));
+        await SendBedrockPacketAsync(PlayStatusPacket.Create(Compression.Algorithm.Zlib, PlayStatus.PlayerSpawn));
     }
 }
