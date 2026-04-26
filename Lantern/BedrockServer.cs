@@ -15,6 +15,7 @@ namespace Lantern;
 
 public class BedrockServer {
 
+    // Sized to comfortably fit Bedrock/RakNet traffic while avoiding oversized per-loop allocations.
     private const int MaxUdpPacketSize = 10000;
 
     public BedrockHandler BedrockHandler { get; set; } = new();
@@ -79,13 +80,14 @@ public class BedrockServer {
 
         Server.IsRunning = true;
         Server.PacketProcessor = new PacketProcessor(Server.Socket, Server, Server.HandlerSystem);
+        var anyEndPoint = new IPEndPoint(IPAddress.Any, 0);
+        EndPoint remoteEndPoint = anyEndPoint;
 
         while (Server.IsRunning) {
-            EndPoint remoteEndPoint = new IPEndPoint(IPAddress.Any, 0);
-
             SocketReceiveFromResult received;
             try {
                 received = await Server.Socket.ReceiveFromAsync(receiveBuffer, SocketFlags.None, remoteEndPoint);
+                remoteEndPoint = anyEndPoint;
             } catch (ObjectDisposedException) {
                 break;
             } catch (SocketException ex) {
