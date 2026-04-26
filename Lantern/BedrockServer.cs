@@ -1,5 +1,6 @@
-﻿using System.Net;
+using System.Net;
 using BedrockProtocol;
+using BedrockProtocol.Types;
 using Lantern.Handling;
 using Lantern.Utils;
 using RakSharp;
@@ -66,30 +67,48 @@ public class BedrockServer {
     }
 
     private async void HandleGamePacket(ClientSession clientSession, EncapsulatedPacket encapsulatedPacket) {
-        
-        var packet = BedrockPacketFactory.CreateFromBuffer(encapsulatedPacket.Buffer);
-        if (packet is not GamePacket gamePacket) {
+        var outerPacket = BedrockPacketFactory.CreateFromBuffer(encapsulatedPacket.Buffer);
+        if (outerPacket is null) {
             Logger.LogWarn($"Unknown or unsupported BedrockPacket: ({encapsulatedPacket.Buffer[0]}) from ({clientSession.RemoteEndPoint})");
             return;
         }
 
-        if (gamePacket.Payload is null || gamePacket.Payload.Length == 0) {
-            Logger.LogWarn($"Received an empty Payload from GamePacket ({clientSession.RemoteEndPoint})");
-            return;
+        BedrockPacket? maybeBedrockPacket;
+        byte[] payloadBuffer;
+
+        if (outerPacket is GamePacket gamePacket) {
+            if (gamePacket.Payload is null || gamePacket.Payload.Length == 0) {
+                Logger.LogWarn($"Received an empty Payload from GamePacket ({clientSession.RemoteEndPoint})");
+                return;
+            }
+
+            payloadBuffer = gamePacket.Payload;
+            maybeBedrockPacket = BedrockPacketFactory.CreateFromBuffer(payloadBuffer);
+        } else {
+            payloadBuffer = encapsulatedPacket.Buffer;
+            maybeBedrockPacket = outerPacket;
         }
 
-        var bedrockPacket = BedrockPacketFactory.CreateFromBuffer(gamePacket.Payload);
-        if (bedrockPacket is null) {
-            Logger.LogWarn($"Unknown or unsupported BedrockPacket: ({encapsulatedPacket.Buffer[0]}) from ({clientSession.RemoteEndPoint})");
+        if (maybeBedrockPacket is null) {
+            Logger.LogWarn($"Unknown or unsupported BedrockPacket: ({payloadBuffer[0]}) from ({clientSession.RemoteEndPoint})");
             return;
         }
-        
+        var bedrockPacket = maybeBedrockPacket;
+
         var packetType = bedrockPacket.GetType();
         var handler = BedrockHandler.CreateHandler(packetType);
-        if (handler is null)
+        if (handler is null) {
+            if (bedrockPacket is RawBedrockPacket rawPacket) {
+                var packetId = (int)rawPacket.PacketType;
+                if (PacketRegistry.TryGetName(packetId, out var packetName))
+                    Logger.LogDebug($"Unsupported Bedrock packet '{packetName}' ({packetId}) from ({clientSession.RemoteEndPoint})");
+                else
+                    Logger.LogDebug($"Unsupported Bedrock packet ({packetId}) from ({clientSession.RemoteEndPoint})");
+            }
             return;
-        
-        handler.Initialize(Server, Server.Socket, clientSession.RemoteEndPoint, gamePacket.Payload, bedrockPacket);
+        }
+
+        handler.Initialize(Server, Server.Socket, clientSession.RemoteEndPoint, payloadBuffer, bedrockPacket);
         var handled = await handler.HandleAsync();
         if (!handled) {
             var packetName = packetType.Name;
