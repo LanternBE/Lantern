@@ -1,6 +1,6 @@
-using System.Text;
 using BedrockProtocol;
 using BedrockProtocol.Types;
+using Lantern.Utils;
 using RakSharp;
 using BinaryReader = RakSharp.Binary.BinaryReader;
 using BinaryWriter = RakSharp.Binary.BinaryWriter;
@@ -33,7 +33,7 @@ public class ResourcePackStack : BedrockPacket {
     protected override void WritePayload(BinaryWriter writer) {
         writer.WriteBoolean(MustAccept);
         writer.WriteVarUInt(ResourcePackStackCount);
-        WriteBedrockString(writer, BaseGameVersion);
+        BedrockStringCodec.Write(writer, BaseGameVersion);
         writer.WriteVarUInt(ExperimentsCount);
         writer.WriteBoolean(ExperimentsPreviouslyToggled);
         writer.WriteBoolean(UseVanillaEditorPacks);
@@ -42,7 +42,7 @@ public class ResourcePackStack : BedrockPacket {
     protected override void ReadPayload(BinaryReader reader) {
         MustAccept = reader.ReadBoolean();
         ResourcePackStackCount = reader.ReadVarUInt();
-        BaseGameVersion = ReadBedrockString(reader);
+        BaseGameVersion = BedrockStringCodec.Read(reader);
         ExperimentsCount = reader.ReadVarUInt();
         ExperimentsPreviouslyToggled = reader.ReadBoolean();
         UseVanillaEditorPacks = reader.ReadBoolean();
@@ -65,19 +65,4 @@ public class ResourcePackStack : BedrockPacket {
         });
     }
 
-    private static string ReadBedrockString(BinaryReader reader) {
-        var length = (int)reader.ReadVarUInt();
-        if (length <= 0) {
-            return string.Empty;
-        }
-
-        var bytes = reader.ReadBytes(length);
-        return Encoding.UTF8.GetString(bytes);
-    }
-
-    private static void WriteBedrockString(BinaryWriter writer, string value) {
-        var bytes = Encoding.UTF8.GetBytes(value);
-        writer.WriteVarUInt((uint)bytes.Length);
-        writer.Write(bytes);
-    }
 }

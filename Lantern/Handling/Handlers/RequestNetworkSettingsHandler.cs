@@ -1,5 +1,6 @@
 using BedrockProtocol;
 using BedrockProtocol.Types;
+using Lantern.Utils;
 using RakSharp.Utils;
 using PlayStatus = BedrockProtocol.PlayStatus;
 
@@ -16,34 +17,15 @@ public class RequestNetworkSettingsHandler : BedrockPacketHandler<RequestNetwork
         }
         
         Logger.LogDebug($"Received RequestNetworkSettings inside the GamePacket from ({ClientEndPoint}) with Protocol Version: {Packet.ProtocolVersion}");
-        if (Info.SupportedProtocols.Count == 0) {
-            Logger.LogError("No supported protocol configured on server");
-            clientSession.Disconnect();
-            return false;
-        }
-
-        var minSupportedProtocol = Info.SupportedProtocols.Min();
-        var maxSupportedProtocol = Info.SupportedProtocols.Max();
-
-        if (Packet.ProtocolVersion < minSupportedProtocol) {
-            
-            Logger.LogInfo($"Client protocol version {Packet.ProtocolVersion} is outdated");
-            await SendBedrockPacketAsync(PlayStatus.Create(compressionAlgorithm: Compression.Algorithm.None, BedrockProtocol.Types.PlayStatus.LoginFailedClientOld));
-            
-            clientSession.Disconnect();
-            return false;
-        }
-
-        if (Packet.ProtocolVersion > maxSupportedProtocol) {
-            
-            Logger.LogInfo($"Client protocol version {Packet.ProtocolVersion} is newer than supported by server");
-            await SendBedrockPacketAsync(PlayStatus.Create(compressionAlgorithm: Compression.Algorithm.None, BedrockProtocol.Types.PlayStatus.LoginFailedServerOld));
-           
+        if (!ProtocolSupport.TryValidateClientProtocol(Packet.ProtocolVersion, out var rejectionStatus, out var logMessage)) {
+            Logger.LogInfo(logMessage);
+            await SendBedrockPacketAsync(PlayStatus.Create(compressionAlgorithm: Compression.Algorithm.None, rejectionStatus));
             clientSession.Disconnect();
             return false;
         }
 
         clientSession.Compression = Compression.Algorithm.Zlib;
+        // Keep threshold high for now to avoid mandatory compression while basic login flow is incomplete.
         var networkSettings = NetworkSettings.Create(
             compressionAlgorithm: Compression.Algorithm.Zlib,
             compressionThreshold: ushort.MaxValue,

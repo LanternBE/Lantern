@@ -1,6 +1,6 @@
-using System.Text;
 using BedrockProtocol;
 using BedrockProtocol.Types;
+using Lantern.Utils;
 using RakSharp;
 using BinaryReader = RakSharp.Binary.BinaryReader;
 using BinaryWriter = RakSharp.Binary.BinaryWriter;
@@ -37,7 +37,7 @@ public class ResourcePacksInfo : BedrockPacket {
         writer.WriteBoolean(HasScripts);
         writer.WriteBoolean(ForceDisableVibrantVisuals);
         writer.Write(WorldTemplateId);
-        WriteBedrockString(writer, WorldTemplateVersion);
+        BedrockStringCodec.Write(writer, WorldTemplateVersion);
         writer.WriteUnsignedShortLittleEndian(ResourcePackCount);
     }
 
@@ -47,7 +47,7 @@ public class ResourcePacksInfo : BedrockPacket {
         HasScripts = reader.ReadBoolean();
         ForceDisableVibrantVisuals = reader.ReadBoolean();
         WorldTemplateId = reader.ReadBytes(16);
-        WorldTemplateVersion = ReadBedrockString(reader);
+        WorldTemplateVersion = BedrockStringCodec.Read(reader);
         ResourcePackCount = reader.ReadUnsignedShortLittleEndian();
     }
 
@@ -70,19 +70,4 @@ public class ResourcePacksInfo : BedrockPacket {
         });
     }
 
-    private static string ReadBedrockString(BinaryReader reader) {
-        var length = (int)reader.ReadVarUInt();
-        if (length <= 0) {
-            return string.Empty;
-        }
-
-        var bytes = reader.ReadBytes(length);
-        return Encoding.UTF8.GetString(bytes);
-    }
-
-    private static void WriteBedrockString(BinaryWriter writer, string value) {
-        var bytes = Encoding.UTF8.GetBytes(value);
-        writer.WriteVarUInt((uint)bytes.Length);
-        writer.Write(bytes);
-    }
 }

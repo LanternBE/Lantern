@@ -1,6 +1,6 @@
-using System.Text;
 using BedrockProtocol;
 using BedrockProtocol.Types;
+using Lantern.Utils;
 using RakSharp;
 using BinaryReader = RakSharp.Binary.BinaryReader;
 using BinaryWriter = RakSharp.Binary.BinaryWriter;
@@ -35,7 +35,7 @@ public class ResourcePackClientResponse : BedrockPacket {
         writer.WriteByte(Status);
         writer.WriteUnsignedShortLittleEndian((ushort)PackIds.Count);
         foreach (var packId in PackIds) {
-            WriteBedrockString(writer, packId);
+            BedrockStringCodec.Write(writer, packId);
         }
     }
 
@@ -45,7 +45,7 @@ public class ResourcePackClientResponse : BedrockPacket {
 
         PackIds = [];
         for (var i = 0; i < count; i++) {
-            PackIds.Add(ReadBedrockString(reader));
+            PackIds.Add(BedrockStringCodec.Read(reader));
         }
     }
 
@@ -61,19 +61,4 @@ public class ResourcePackClientResponse : BedrockPacket {
         });
     }
 
-    private static string ReadBedrockString(BinaryReader reader) {
-        var length = (int)reader.ReadVarUInt();
-        if (length <= 0) {
-            return string.Empty;
-        }
-
-        var bytes = reader.ReadBytes(length);
-        return Encoding.UTF8.GetString(bytes);
-    }
-
-    private static void WriteBedrockString(BinaryWriter writer, string value) {
-        var bytes = Encoding.UTF8.GetBytes(value);
-        writer.WriteVarUInt((uint)bytes.Length);
-        writer.Write(bytes);
-    }
 }
