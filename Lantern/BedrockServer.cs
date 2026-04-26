@@ -1,9 +1,12 @@
 using System.Net;
+using System.Net.Sockets;
 using BedrockProtocol;
 using BedrockProtocol.Types;
 using Lantern.Handling;
 using Lantern.Utils;
 using RakSharp;
+using RakSharp.Packet;
+using RakSharp.Protocol;
 using RakSharp.Protocol.Online;
 using RakSharp.Utils;
 using RakSharp.Utils.Sessions;
@@ -42,28 +45,70 @@ public class BedrockServer {
     }
 
     public void Start() {
-        
-        Logger.LogInfo($"Starting RakNet server on {IpEndPoint}, DEBUG: {Debug}");
-        _ = Task.Run(async () => {
-            await Server.Start();
-        });
+        _ = Task.Run(StartAsync);
     }
 
     public void Stop() {
-        
-        _ = Task.Run(async () => {
-            await Server.Stop();
-        });
+        _ = Task.Run(StopAsync);
     }
 
     public async Task StartAsync() {
-        
+
         Logger.LogInfo($"Starting RakNet server on {IpEndPoint}, DEBUG: {Debug}");
-        await Server.Start();
+        await RunServerLoopAsync();
     }
 
     public async Task StopAsync() {
         await Server.Stop();
+    }
+
+    private async Task RunServerLoopAsync() {
+
+        if (Server.IsRunning) {
+            Logger.LogWarn("RakNet is already running.");
+            return;
+        }
+
+        Logger.LogInfo("RakNet started.");
+        var receiveBuffer = new byte[10000];
+
+        Server.Socket.EnableBroadcast = true;
+        Server.Socket.Bind(Server.ServerAddress);
+
+        Server.IsRunning = true;
+        Server.PacketProcessor = new PacketProcessor(Server.Socket, Server, Server.HandlerSystem);
+
+        while (Server.IsRunning) {
+            var sender = new IPEndPoint(IPAddress.Any, 0);
+            EndPoint remoteEndPoint = sender;
+
+            SocketReceiveFromResult received;
+            try {
+                received = await Server.Socket.ReceiveFromAsync(receiveBuffer, SocketFlags.None, remoteEndPoint);
+            } catch (ObjectDisposedException) {
+                break;
+            } catch (SocketException ex) {
+                Logger.LogError($"Socket error while receiving packet: {ex.SocketErrorCode} ({ex.Message})");
+                continue;
+            }
+
+            if (received.ReceivedBytes <= 0)
+                continue;
+
+            var packetBuffer = new byte[received.ReceivedBytes];
+            Array.Copy(receiveBuffer, packetBuffer, received.ReceivedBytes);
+
+            var packet = DynamicPacketFactory.CreatePacketFromBufferAuto(packetBuffer);
+            if (packet is null) {
+                Logger.LogWarn($"Failed to parse packet from {received.RemoteEndPoint}");
+                continue;
+            }
+
+            var clientIpEndPoint = (IPEndPoint)received.RemoteEndPoint;
+            var success = await Server.PacketProcessor.ProcessPacketAsync(packet, packetBuffer, clientIpEndPoint);
+            if (!success)
+                Logger.LogError($"Failed to parse packet from {clientIpEndPoint}");
+        }
     }
 
     private async void HandleGamePacket(ClientSession clientSession, EncapsulatedPacket encapsulatedPacket) {
