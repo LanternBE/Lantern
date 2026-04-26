@@ -8,6 +8,7 @@ namespace Lantern.Handling.Handlers;
 public class ResourcePackClientResponseHandler : BedrockPacketHandler<ResourcePackClientResponse> {
 
     private const ulong LocalPlayerRuntimeId = 1;
+    private const int DefaultViewDistance = 10;
 
     public override async Task<bool> HandleAsync() {
         Logger.LogDebug($"Received ResourcePackClientResponse ({Packet.Status}) from ({ClientEndPoint})");
@@ -38,8 +39,8 @@ public class ResourcePackClientResponseHandler : BedrockPacketHandler<ResourcePa
     }
 
     private async Task SendGameplayStartSequenceAsync() {
-        var worldName = Server.ConfigManager.Settings.ServerName;
-        var viewDistance = Math.Max(1, Server.ConfigManager.Settings.ViewDistance);
+        var worldName = string.IsNullOrWhiteSpace(Server.ServerInfo.ServerName) ? "Lantern" : Server.ServerInfo.ServerName;
+        var viewDistance = DefaultViewDistance;
 
         await SendBedrockPacketAsync(StartGame.Create(
             compressionAlgorithm: Compression.Algorithm.Zlib,

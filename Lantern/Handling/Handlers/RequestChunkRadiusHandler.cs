@@ -6,9 +6,11 @@ namespace Lantern.Handling.Handlers;
 
 public class RequestChunkRadiusHandler : BedrockPacketHandler<RequestChunkRadius> {
 
+    private const int DefaultViewDistance = 10;
+
     public override async Task<bool> HandleAsync() {
         var requestedRadius = Math.Max(1, Packet.ChunkRadius);
-        var maxServerRadius = Math.Max(1, Server.ConfigManager.Settings.ViewDistance);
+        var maxServerRadius = DefaultViewDistance;
         var negotiatedRadius = Math.Min(requestedRadius, maxServerRadius);
 
         Logger.LogDebug(
