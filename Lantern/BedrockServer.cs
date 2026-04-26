@@ -80,14 +80,12 @@ public class BedrockServer {
 
         Server.IsRunning = true;
         Server.PacketProcessor = new PacketProcessor(Server.Socket, Server, Server.HandlerSystem);
-        var anyEndPoint = new IPEndPoint(IPAddress.Any, 0);
-        EndPoint remoteEndPoint = anyEndPoint;
+        EndPoint remoteEndPoint = new IPEndPoint(IPAddress.Any, 0);
 
         while (Server.IsRunning) {
             SocketReceiveFromResult received;
             try {
                 received = await Server.Socket.ReceiveFromAsync(receiveBuffer, SocketFlags.None, remoteEndPoint);
-                remoteEndPoint = anyEndPoint;
             } catch (ObjectDisposedException) {
                 break;
             } catch (SocketException ex) {
@@ -95,7 +93,7 @@ public class BedrockServer {
                 continue;
             }
 
-            if (received.ReceivedBytes <= 0)
+            if (received.ReceivedBytes == 0)
                 continue;
 
             var packetBuffer = new byte[received.ReceivedBytes];
@@ -110,7 +108,7 @@ public class BedrockServer {
             var clientIpEndPoint = (IPEndPoint)received.RemoteEndPoint;
             var success = await Server.PacketProcessor.ProcessPacketAsync(packet, packetBuffer, clientIpEndPoint);
             if (!success)
-                Logger.LogError($"Failed to parse packet from {clientIpEndPoint}");
+                Logger.LogError($"Failed to process packet from {clientIpEndPoint}");
         }
     }
 
