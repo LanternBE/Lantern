@@ -62,7 +62,7 @@ public class StartGame : BedrockPacket {
         BedrockVarInt.WriteVarInt32(writer, 2); // Difficulty (Normal)
 
         BedrockVarInt.WriteVarInt32(writer, 0); // WorldSpawn X
-        BedrockVarInt.WriteVarInt32(writer, (int)PlayerY); // WorldSpawn Y
+        BedrockVarInt.WriteVarInt32(writer, (int)MathF.Round(PlayerY)); // WorldSpawn Y
         BedrockVarInt.WriteVarInt32(writer, 0); // WorldSpawn Z
 
         writer.WriteBoolean(false); // AchievementsDisabled
@@ -164,7 +164,7 @@ public class StartGame : BedrockPacket {
     ) {
         return BedrockPacket.Create<StartGame>(packet => {
             packet.CompressionAlgorithm = compressionAlgorithm;
-            packet.EntityUniqueId = (long)entityRuntimeId;
+            packet.EntityUniqueId = entityRuntimeId > (ulong)long.MaxValue ? long.MaxValue : (long)entityRuntimeId;
             packet.EntityRuntimeId = entityRuntimeId;
             packet.PlayerGameMode = playerGameMode;
             packet.PlayerX = x;

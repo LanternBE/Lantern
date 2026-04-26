@@ -8,7 +8,7 @@ public static class BedrockStringCodec {
 
     public static string Read(BinaryReader reader) {
         var length = (int)reader.ReadVarUInt();
-        if (length <= 0) {
+        if (length == 0) {
             return string.Empty;
         }
 

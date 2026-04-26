@@ -28,10 +28,12 @@ public static class BedrockVarInt {
     public static ulong ReadVarUInt64(BinaryReader reader) {
         ulong result = 0;
         var shift = 0;
+        var bytesRead = 0;
 
-        while (shift < 64) {
+        while (bytesRead < 10) {
             var b = reader.ReadByte();
             result |= (ulong)(b & 0x7F) << shift;
+            bytesRead++;
 
             if ((b & 0x80) == 0) {
                 return result;

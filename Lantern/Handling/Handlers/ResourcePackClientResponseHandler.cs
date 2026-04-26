@@ -1,14 +1,12 @@
 using BedrockProtocol.Types;
 using Lantern.Protocol;
+using Lantern.Utils;
 using RakSharp.Utils;
 using PlayStatusPacket = BedrockProtocol.PlayStatus;
 
 namespace Lantern.Handling.Handlers;
 
 public class ResourcePackClientResponseHandler : BedrockPacketHandler<ResourcePackClientResponse> {
-
-    private const ulong LocalPlayerRuntimeId = 1;
-    private const int DefaultViewDistance = 10;
 
     public override async Task<bool> HandleAsync() {
         Logger.LogDebug($"Received ResourcePackClientResponse ({Packet.Status}) from ({ClientEndPoint})");
@@ -40,11 +38,11 @@ public class ResourcePackClientResponseHandler : BedrockPacketHandler<ResourcePa
 
     private async Task SendGameplayStartSequenceAsync() {
         var worldName = string.IsNullOrWhiteSpace(Server.ServerInfo.ServerName) ? "Lantern" : Server.ServerInfo.ServerName;
-        var viewDistance = DefaultViewDistance;
+        var viewDistance = ProtocolSupport.DefaultChunkRadius;
 
         await SendBedrockPacketAsync(StartGame.Create(
             compressionAlgorithm: Compression.Algorithm.Zlib,
-            entityRuntimeId: LocalPlayerRuntimeId,
+            entityRuntimeId: ProtocolSupport.LocalPlayerRuntimeId,
             worldName: worldName,
             playerGameMode: 0,
             x: 0,

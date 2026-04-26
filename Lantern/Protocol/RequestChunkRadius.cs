@@ -33,6 +33,8 @@ public class RequestChunkRadius : BedrockPacket {
 
     protected override void ReadPayload(BinaryReader reader) {
         ChunkRadius = BedrockVarInt.ReadVarInt32(reader);
+        // Some clients/protocol revisions omit MaxChunkRadius and only send ChunkRadius.
+        // Defaulting to 0 keeps compatibility while preserving the requested radius.
         MaxChunkRadius = reader.IsAtEnd() ? (byte)0 : reader.ReadByte();
     }
 }

@@ -6,6 +6,8 @@ namespace Lantern.Utils;
 public static class ProtocolSupport {
 
     public const string BaseGameVersion = "1.21.93";
+    public const int DefaultChunkRadius = 10;
+    public const ulong LocalPlayerRuntimeId = 1;
 
     public static bool TryValidateClientProtocol(
         int protocolVersion,
