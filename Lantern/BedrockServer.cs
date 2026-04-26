@@ -15,6 +15,8 @@ namespace Lantern;
 
 public class BedrockServer {
 
+    private const int MaxUdpPacketSize = 10000;
+
     public BedrockHandler BedrockHandler { get; set; } = new();
     public ConfigManager ConfigManager { get; set; }
     public IPEndPoint IpEndPoint { get; set; }
@@ -70,7 +72,7 @@ public class BedrockServer {
         }
 
         Logger.LogInfo("RakNet started.");
-        var receiveBuffer = new byte[10000];
+        var receiveBuffer = new byte[MaxUdpPacketSize];
 
         Server.Socket.EnableBroadcast = true;
         Server.Socket.Bind(Server.ServerAddress);
@@ -79,8 +81,7 @@ public class BedrockServer {
         Server.PacketProcessor = new PacketProcessor(Server.Socket, Server, Server.HandlerSystem);
 
         while (Server.IsRunning) {
-            var sender = new IPEndPoint(IPAddress.Any, 0);
-            EndPoint remoteEndPoint = sender;
+            EndPoint remoteEndPoint = new IPEndPoint(IPAddress.Any, 0);
 
             SocketReceiveFromResult received;
             try {
