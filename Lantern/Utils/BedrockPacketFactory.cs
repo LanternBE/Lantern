@@ -11,6 +11,7 @@ public static class BedrockPacketFactory {
     private static readonly List<Func<BedrockPacket>> PacketFactories = [
         () => new BedrockProtocol.RequestNetworkSettings(),
         () => new Login(),
+        () => new ResourcePackClientResponse(),
         () => new BedrockProtocol.GamePacket(),
         () => new BedrockProtocol.RawBedrockPacket()
     ];

@@ -14,6 +14,7 @@ public class BedrockHandler {
         
         RegisterHandler<RequestNetworkSettings, RequestNetworkSettingsHandler>();
         RegisterHandler<Login, LoginHandler>();
+        RegisterHandler<ResourcePackClientResponse, ResourcePackClientResponseHandler>();
     }
 
     public void RegisterHandler<TPacket, THandler>()

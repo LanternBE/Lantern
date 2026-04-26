@@ -16,18 +16,27 @@ public class RequestNetworkSettingsHandler : BedrockPacketHandler<RequestNetwork
         }
         
         Logger.LogDebug($"Received RequestNetworkSettings inside the GamePacket from ({ClientEndPoint}) with Protocol Version: {Packet.ProtocolVersion}");
-        if (Packet.ProtocolVersion < Info.SupportedProtocols.First()) {
+        if (Info.SupportedProtocols.Count == 0) {
+            Logger.LogError("No supported protocol configured on server");
+            clientSession.Disconnect();
+            return false;
+        }
+
+        var minSupportedProtocol = Info.SupportedProtocols.Min();
+        var maxSupportedProtocol = Info.SupportedProtocols.Max();
+
+        if (Packet.ProtocolVersion < minSupportedProtocol) {
             
-            Logger.LogError($"Protocol version {Packet.ProtocolVersion} is outdated");
+            Logger.LogInfo($"Client protocol version {Packet.ProtocolVersion} is outdated");
             await SendBedrockPacketAsync(PlayStatus.Create(compressionAlgorithm: Compression.Algorithm.None, BedrockProtocol.Types.PlayStatus.LoginFailedClientOld));
             
             clientSession.Disconnect();
             return false;
         }
 
-        if (Packet.ProtocolVersion > Info.SupportedProtocols.Last()) {
+        if (Packet.ProtocolVersion > maxSupportedProtocol) {
             
-            Logger.LogError($"Server Protocol version {Packet.ProtocolVersion} is outdated");
+            Logger.LogInfo($"Client protocol version {Packet.ProtocolVersion} is newer than supported by server");
             await SendBedrockPacketAsync(PlayStatus.Create(compressionAlgorithm: Compression.Algorithm.None, BedrockProtocol.Types.PlayStatus.LoginFailedServerOld));
            
             clientSession.Disconnect();
@@ -35,7 +44,11 @@ public class RequestNetworkSettingsHandler : BedrockPacketHandler<RequestNetwork
         }
 
         clientSession.Compression = Compression.Algorithm.Zlib;
-        var networkSettings = NetworkSettings.Create(Compression.Algorithm.Zlib);
+        var networkSettings = NetworkSettings.Create(
+            compressionAlgorithm: Compression.Algorithm.Zlib,
+            compressionThreshold: ushort.MaxValue,
+            compressionAlgorithmMethod: 0
+        );
         
         await SendBedrockPacketAsync(networkSettings);
         return true;

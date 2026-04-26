@@ -41,6 +41,7 @@ public class LoginHandler : BedrockPacketHandler<Login> {
         }
 
         await SendBedrockPacketAsync(PlayStatus.Create(Compression.Algorithm.Zlib, BedrockProtocol.Types.PlayStatus.LoginSuccess));
+        await SendBedrockPacketAsync(ResourcePacksInfo.Create(Compression.Algorithm.Zlib));
         return true;
     }
 }
